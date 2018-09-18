@@ -7,9 +7,9 @@ class App
     request = Rack::Request.new(env)
     @routes.each do |route|
       content = route.match(request)
-      return [200, {}, [content]] if content
+      return [200, { 'Content-Type' => 'text/plain' }, [content.to_s]] if content
     end
-    [404, {}, ['Page does not exist']]
+    [404, { 'Content-Type' => 'text/plain' }, ['Page does not exist']]
   end
 
   class RoutesTable
@@ -40,7 +40,7 @@ class App
         
         if is_variable
           key = spec_component.sub(/\A:/, '')
-          params[key] = req_component
+          params[key] = URI.decode(req_component)
         else
           return nil unless spec_component == req_component
         end

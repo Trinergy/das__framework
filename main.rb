@@ -6,6 +6,6 @@ APP = App.new do
   end
 
   get '/users/:username' do |params|
-    "this is the #{params["username"]} page!"
+    "this is the #{params.fetch('username')} page!"
   end
 end
