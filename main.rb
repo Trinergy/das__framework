@@ -29,8 +29,23 @@ class App
 
   class Route < Struct.new(:route_spec, :block)
     def match(request)
-      block.call() if request.path == route_spec
-      nil
+      params = {}
+      spec_components = route_spec.split('/')
+      req_components = request.path.split('/')
+
+      return nil unless spec_components.length == req_components.length
+      
+      spec_components.zip(req_components).each do |spec_component, req_component|
+        is_variable = spec_component.start_with?(':')
+        
+        if is_variable
+          key = spec_component.sub(/\A:/, '')
+          params[key] = req_component
+        else
+          return nil unless spec_component == req_component
+        end
+      end
+      block.call(params)
     end
   end
 end
@@ -40,7 +55,7 @@ APP = App.new do
     'this is the root!'
   end
 
-  get '/users/:username' do
-    'this is the users page!'
+  get '/users/:username' do |params|
+    "this is the #{params["username"]} page!"
   end
 end
