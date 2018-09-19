@@ -11,12 +11,20 @@ class Database
     new(pg_conn, queries)
   end
 
-  def execute_sql(sql)
-    @pg_conn.exec(sql).to_a
+  def method_missing(name, *args)
+    sql = @queries.fetch(name)
+    @pg_conn.exec_params(sql, args).to_a.map do |row|
+      Record.new(row)
+    end
   end
 
-  def method_missing(name, *args)
-    sql = @queries.fetch(name) % args
-    execute_sql(sql)
+  class Record
+    def initialize(row)
+      @row = row
+    end
+
+    def method_missing(col_name)
+      @row.fetch(col_name.to_s)
+    end
   end
 end
